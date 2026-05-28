@@ -1,0 +1,8 @@
+{
+  "active": "A",
+  "accounts": [
+    { "label": "A", "name": "Primary (Builder)",   "email": "", "lane": "builder" },
+    { "label": "B", "name": "Secondary (Operator)", "email": "", "lane": "operator" },
+    { "label": "C", "name": "Overflow",             "email": "", "lane": "overflow" }
+  ]
+}

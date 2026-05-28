@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "hard_stop_at_pct": 30,
+  "alert_at_pct": 10,
+  "burn_rate_alert_pct_per_min": 2,
+  "max_concurrent_sessions": 5
+}

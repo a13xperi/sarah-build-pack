@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# token-watch launcher — sources the pack env so SUPA_URL/SUPA_KEY are set,
+# then starts the Textual TUI. Symlink into your PATH (bootstrap.sh does this).
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PACK="$(cd "$HERE/.." && pwd)"
+
+# Pull in SUPA_URL / SUPA_KEY (+ optional BS_GITHUB_USER, BS_DEFAULT_COMPANY).
+[ -f "$PACK/lib/config.sh" ] && source "$PACK/lib/config.sh"
+
+if [ -z "${SUPA_URL:-}" ] || [ -z "${SUPA_KEY:-}" ]; then
+  echo "token-watch: SUPA_URL / SUPA_KEY not set." >&2
+  echo "  cp $PACK/.env.example $PACK/.env  and fill in your Supabase, then retry." >&2
+  exit 1
+fi
+
+exec python3 "$HERE/token_watch_tui.py" "$@"

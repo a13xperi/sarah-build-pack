@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "token-watch"
+version = "0.16.0"
+description = "Real-time terminal dashboard for Claude Code fleet management — token usage, session health, advisor engine, capacity analytics"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = [
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+tui = ["textual>=0.50"]
+test = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[project.scripts]
+token-window = "token_watch:main"
+token-window-tui = "token_watch_tui:main"
+token-watch = "token_watch:main"
+token-watch-tui = "token_watch_tui:main"

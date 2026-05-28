@@ -1,0 +1,506 @@
+Screen {
+    layout: vertical;
+}
+
+/* ── Compact Status Bar ── */
+#compact-status-bar {
+    height: 1;
+    dock: top;
+    padding: 0 1;
+    background: $surface-darken-2;
+}
+
+/* ── Nav Bar ── */
+#nav-bar {
+    height: 3;
+    dock: top;
+    background: $surface;
+    padding: 0 1;
+}
+
+/* ── Global Cycle Banner ── */
+#cycle-banner {
+    height: 1;
+    max-height: 1;
+    padding: 0 1;
+    dock: top;
+    overflow: hidden;
+}
+
+#nav-bar Button {
+    min-width: 12;
+    height: 3;
+    margin: 0 1 0 0;
+    border: none;
+    background: $surface-darken-1;
+    color: $text-muted;
+}
+
+#nav-bar Button:hover {
+    background: $primary-darken-1;
+    color: $text;
+}
+
+#nav-bar Button.-primary {
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+/* -- Reload Banner -- */
+#reload-banner {
+    dock: top;
+    height: 1;
+    display: none;
+}
+
+#content-switcher {
+    height: 1fr;
+}
+
+#view-dashboard {
+    height: 1fr;
+}
+
+/* ── Urgent ── */
+#urgent {
+    height: auto;
+    max-height: 3;
+}
+
+/* ── Account Capacity (toggle with 'a') ── */
+#account-capacity {
+    height: auto;
+    max-height: 6;
+}
+
+/* ── Active Sessions (interactive DataTable — Enter/f to focus terminal) ── */
+#active-sessions {
+    height: auto;
+    border: solid cyan;
+    border-title-color: white;
+    border-title-style: bold;
+    border-title-align: center;
+    margin: 0 0 1 0;
+}
+
+#active-sessions:focus {
+    border: tall $accent;
+}
+
+/* ── Session Narrative (what was built in this 5h window) ── */
+#session-narrative {
+    height: auto;
+    max-height: 18;
+    border: solid green;
+    border-title-color: white;
+    border-title-style: bold;
+    padding: 0 1;
+    margin: 0 0 1 0;
+}
+
+/* ── Session History (Call History merged in) ── */
+#session-history {
+    width: 1fr;
+    height: 1fr;
+    min-height: 24;
+    border: solid dodgerblue;
+    border-title-color: white;
+    border-title-style: bold;
+    border-title-align: center;
+}
+
+#session-history:focus {
+    border: tall $accent;
+}
+
+/* ── Stats row (Tool Frequency + Skills side by side) ── */
+#feed-row {
+    layout: horizontal;
+    height: auto;
+    max-height: 14;
+}
+
+#tool-freq {
+    width: 1fr;
+    height: auto;
+    max-height: 14;
+}
+
+#skills {
+    width: 1fr;
+    height: auto;
+    max-height: 14;
+}
+
+#drain {
+    width: 1fr;
+    height: auto;
+    max-height: 14;
+}
+
+#agents {
+    width: 1fr;
+    height: auto;
+    max-height: 14;
+}
+
+/* ── Burndown chart ── */
+#burndown {
+    height: auto;
+    max-height: 12;
+    margin: 0 0 1 0;
+}
+
+/* ── Token Attribution ── */
+#attribution {
+    height: auto;
+    max-height: 6;
+    margin: 0 0 1 0;
+}
+
+#attr-header {
+    height: auto;
+    max-height: 3;
+    padding: 0 1;
+}
+
+#attr-table {
+    height: 1fr;
+    border: solid yellow;
+    border-title-color: white;
+}
+
+/* ── Search input ── */
+#search-input {
+    height: auto;
+    max-height: 3;
+    margin: 0 1;
+    border: solid cyan;
+}
+
+/* ── Drill-down screen ── */
+#drilldown-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#accomplishments-view {
+    height: 1fr;
+    padding: 1 2;
+    overflow-y: auto;
+}
+
+#drilldown-table {
+    height: 1fr;
+    border: solid dodgerblue;
+}
+
+/* ── Usage metrics screen ── */
+#metrics-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#metrics-table {
+    height: 1fr;
+    border: solid cyan;
+}
+
+#metrics-summary {
+    height: auto;
+    max-height: 3;
+    padding: 0 1;
+}
+
+/* ── Token Access Control (Usage Metrics screen) ── */
+#token-access {
+    height: auto;
+    max-height: 12;
+}
+
+#taccess-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#taccess-table {
+    height: 1fr;
+    border: solid magenta;
+    border-title-color: white;
+}
+
+#taccess-blocked-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#taccess-blocked {
+    height: auto;
+    max-height: 10;
+    border: solid yellow;
+}
+
+#taccess-footer {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+/* ── Window Scores (Usage Metrics screen) ── */
+#scores-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#scores-table {
+    height: 1fr;
+    border: solid yellow;
+    border-title-color: white;
+}
+
+/* ── DataTable styling ── */
+DataTable {
+    scrollbar-size: 1 1;
+}
+
+DataTable > .datatable--header {
+    text-style: bold;
+}
+
+/* -- Cycle Monitor screen -- */
+#cm-header {
+    height: auto;
+    max-height: 3;
+    padding: 0 1;
+}
+
+#cm-add-row {
+    height: 3;
+    padding: 0 1;
+}
+
+#cm-add-input {
+    width: 1fr;
+    height: 3;
+    border: solid cyan;
+}
+
+.cm-cat {
+    min-width: 8;
+    height: 3;
+    margin: 0 0 0 1;
+}
+
+#cm-project-row {
+    height: 3;
+    padding: 0 1;
+}
+
+.cm-proj {
+    min-width: 6;
+    height: 3;
+    margin: 0 0 0 1;
+}
+
+#cm-objective {
+    height: auto;
+    max-height: 4;
+    padding: 0 1;
+}
+
+#cm-table {
+    height: 1fr;
+    border: solid green;
+    border-title-color: white;
+}
+
+#cm-lanes-row {
+    height: auto;
+    max-height: 12;
+    min-height: 4;
+    padding: 0 1;
+}
+
+#cm-lane-1, #cm-lane-2, #cm-lane-3 {
+    width: 1fr;
+    height: auto;
+    border: solid $accent;
+    padding: 0 1;
+    margin: 0 1 0 0;
+}
+
+#cm-prev {
+    height: auto;
+    max-height: 6;
+    padding: 0 1;
+}
+
+/* ── Project Board screen ── */
+#pboard-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#pboard-summary {
+    width: 1fr;
+    height: auto;
+    max-height: 12;
+    padding: 0 1;
+}
+
+#pboard-table {
+    width: 1fr;
+    height: 1fr;
+    border: solid yellow;
+    border-title-color: white;
+}
+
+/* ── Account Capacity screen ── */
+#cap-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#cap-panels {
+    layout: horizontal;
+    height: 1fr;
+}
+
+#cap-panel-a, #cap-panel-b, #cap-panel-c {
+    width: 1fr;
+    height: auto;
+    padding: 0 1;
+}
+
+#cap-footer {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+/* ── Leaderboard screen ── */
+#lb-header {
+    height: auto;
+    max-height: 2;
+    padding: 0 1;
+}
+
+#lb-table {
+    height: 1fr;
+    border: solid yellow;
+    border-title-color: white;
+}
+
+/* ── Cycles screen ── */
+#cycles-current {
+    height: auto;
+    max-height: 5;
+    padding: 0 1;
+}
+
+#cycles-list {
+    height: 1fr;
+    border: solid cyan;
+    border-title-color: white;
+}
+
+/* ── Cycle detail ── */
+#cdetail-header { height: auto; max-height: 3; padding: 0 1; }
+#cdetail-scores { height: auto; max-height: 2; padding: 0 1; }
+#cdetail-accomplishments { height: auto; max-height: 5; padding: 0 1; }
+#cdetail-sources-header { height: auto; max-height: 2; padding: 0 1; }
+#cdetail-sources { height: auto; max-height: 10; border: solid cyan; border-title-color: white; }
+#cdetail-sessions { height: 1fr; min-height: 8; border: solid dodgerblue; }
+#cdetail-plan { height: auto; max-height: 8; padding: 0 1; }
+
+/* ── Rules tab ── */
+#rules-header { height: auto; max-height: 2; padding: 0 1; }
+#rules-table { height: 1fr; min-height: 12; border: solid magenta; border-title-color: white; }
+#rules-detail-header { height: auto; max-height: 2; padding: 0 1; }
+#rules-detail { height: auto; max-height: 12; border: solid yellow; }
+
+/* ── Cycle plan ── */
+#cplan-header { height: auto; max-height: 4; padding: 0 1; }
+#cplan-tasks { height: auto; max-height: 12; border: solid green; }
+#cplan-available { height: 1fr; border: solid yellow; }
+
+/* ── Audit View ── */
+#audit-header { height: auto; max-height: 5; padding: 0 1; }
+#audit-projects { height: auto; max-height: 12; padding: 0 1; margin: 0 0 1 0; }
+#audit-cycles { height: 1fr; border: solid gold; border-title-color: white; border-title-style: bold; }
+#audit-footer { height: auto; max-height: 2; padding: 0 1; }
+
+/* ── Advisor View ── */
+#advisor-header { height: auto; max-height: 3; padding: 0 1; }
+#advisor-top-action { height: auto; max-height: 2; padding: 0 1; margin: 0 0 1 0; background: $boost; }
+#advisor-summary { height: auto; max-height: 2; padding: 0 1; }
+#advisor-table { height: 1fr; border: solid magenta; border-title-color: white; border-title-style: bold; }
+
+/* ── Inbox View ── */
+#inbox-header { height: auto; max-height: 3; padding: 0 1; }
+#inbox-table { height: 1fr; border: solid cyan; border-title-color: white; border-title-style: bold; }
+
+/* ── Analytics View ── */
+#an-header { height: auto; max-height: 2; padding: 0 1; }
+#an-fleet { height: auto; max-height: 8; padding: 0 1; margin: 0 0 1 0; }
+#an-accounts-row { layout: horizontal; height: auto; max-height: 14; }
+#an-acct-a, #an-acct-b, #an-acct-c { width: 1fr; height: auto; padding: 0 1; }
+#an-heatmap { height: auto; max-height: 8; padding: 0 1; margin: 0 0 1 0; }
+#an-waste { height: auto; max-height: 10; padding: 0 1; margin: 0 0 1 0; }
+#an-efficiency { height: auto; max-height: 12; border: solid green; border-title-color: white; }
+#an-suggestions { height: auto; max-height: 12; padding: 0 1; margin: 0 0 1 0; }
+
+/* ── Navigation Screen ── */
+#navscreen-header { height: auto; max-height: 2; padding: 1 2; }
+#navscreen-grid { padding: 1 2; height: auto; }
+.navscreen-group-label { height: 1; margin: 1 0 0 0; }
+.navscreen-row { height: auto; width: 100%; }
+.navscreen-btn { width: 1fr; height: 3; margin: 0 1 0 0; min-width: 12; }
+
+/* -- Dispatch View -- */
+#dispatch-header { height: auto; max-height: 3; padding: 0 1; }
+#dispatch-table { height: 1fr; border: solid green; border-title-color: white; border-title-style: bold; }
+
+/* -- Dispatch Detail Screen -- */
+#dd-header { height: auto; max-height: 3; padding: 0 1; background: $surface; }
+#dd-scroll { height: 1fr; padding: 1 2; }
+#dd-body { height: auto; }
+
+/* -- Mission Control layout -- */
+#mission-table {
+    height: 1fr;
+}
+
+/* -- Advisor layout -- */
+#advisor-table {
+    height: 1fr;
+}
+
+/* -- Advisor detail screen layout -- */
+#adetail-table {
+    height: 1fr;
+}
+
+/* -- Projects tab layout -- */
+#projects-table {
+    height: 1fr;
+}
+#projects-header { height: auto; padding: 0 1; }
+#projects-recs { height: auto; padding: 1 2; background: $surface; margin-top: 1; }
+
+/* ── Plans Tab ── */
+#plans-header { height: auto; padding: 0 1; }
+#plans-table { height: 1fr; }
+
+/* ── Plan Detail Screen ── */
+#pd-header { padding: 1 2; height: auto; }
+#pd-body   { padding: 1 2; width: 100%; }
+#pd-scroll { height: 1fr; }
