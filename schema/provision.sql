@@ -92,14 +92,14 @@ CREATE TABLE IF NOT EXISTS ai_capacity_ledger (
   id                uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   platform          text        NOT NULL,                -- claude | codex | gemini | grok
   task_id           text        NOT NULL,                -- Notion task ref or free-form ID
-  session_type      text        NOT NULL,                -- chat | build | search | plan
+  session_type      text        NOT NULL,                -- interactive | api | scheduled
   started_at        timestamptz NOT NULL DEFAULT now(),
   ended_at          timestamptz,
   duration_seconds  integer,
   tokens_in         integer,                             -- input tokens consumed
   tokens_out        integer,                             -- output tokens generated
   estimated_cost    numeric,                             -- USD estimated cost
-  outcome           text,                                -- success | partial | failed
+  outcome           text        CHECK (outcome IN ('completed','failed')), -- production constraint
   notes             text,
   created_at        timestamptz DEFAULT now(),
   account           text        NOT NULL DEFAULT 'A',    -- which Claude account (A, B, C)
