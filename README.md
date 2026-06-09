@@ -84,8 +84,12 @@ sarah-build-pack/
 ├── bootstrap.sh           ← one-shot setup
 ├── .env.example           ← copy to .env (YOUR Supabase)
 ├── schema/provision.sql   ← 8 tables, run in your Supabase
-├── lib/                   ← config, supabase wrappers, wire, session, log (sourced into shell)
-├── hooks/                 ← auto-register, wire-inbox, file-lock-check, build-ledger, token-tracker + install.sh
+├── lib/                   ← config, supabase wrappers, wire, session, log, route (sourced + CLI)
+├── lanes/                 ← accounts.sh (A/B/C resolve + capacity-gated switch)
+├── hooks/                 ← auto-register, wire-inbox, file-lock-check, build-ledger,
+│                            token-tracker, engine-tracker, loop-guard, spend-guard + install.sh
+├── cron/                  ← capacity-snapshot, expire-sessions, cleanup-tmp + install-cron.sh
+├── bin/                   ← bs-route (router), claude-switch (account switch)
 ├── templates/             ← accounts.json, token-budget.json
 ├── token-watch/           ← the TUI dashboard (reads your Supabase tables) + launcher
 └── docs/                  ← the four pillars explained
@@ -110,6 +114,13 @@ This pack was forked from a live fleet and scrubbed:
 - Repo→project labels default to your git repo basename. To get richer `company`/`project` labels in `build_ledger`, drop a `~/.battlestation-repos` file with `register_repo "<match>" "<Company>" "<project>"` lines.
 - `accounts.json` uses generic A/B/C lane names — fill in your own account emails.
 
+## Included now
+- **Crons** (`cron/`): `capacity-snapshot` (the `account_capacity` write-path), `expire-sessions` (stale-session GC), `cleanup-tmp` (dead-PID `/tmp` GC). Install all: `./cron/install-cron.sh`.
+- **Account switch** (`lanes/accounts.sh` + `bin/claude-switch`): capacity-gated A/B/C rotation via the macOS Keychain.
+- **Routing** (`lib/route.py` + `bin/bs-route`): the token-matrix task→engine classifier.
+- **SAGE enforcers** (`hooks/loop-guard.sh`, `hooks/spend-guard.sh`): loop-prevention (3× fail → stop) + spending guard on fan-out.
+- **Engine tracking** (`hooks/engine-tracker.sh`): logs external-engine usage to `ai_capacity_ledger`.
+
 ## Not included (bring your own)
-- Cloud coordination dashboard, cron jobs (capacity-snapshot, expire-sessions), and account-switch credential vaults. Add as you scale past one machine.
-- A capacity-snapshot writer for `account_capacity` — token-watch *reads* that table; until a cron populates it, the capacity panels stay empty.
+- Cloud coordination dashboard. Add as you scale past one machine.
+- Account credential **vaults** (`~/.claude/vaults/{A,B,C}/claudeAiOauth.json`): `claude-switch` reads them but you provision them yourself (`claude auth login` per account). macOS Keychain only.
