@@ -54,11 +54,13 @@ source ~/sarah-build-pack/lib/session.sh
     "PreToolUse": [
       { "matcher": "*",    "hooks": [{ "type": "command", "command": "~/.claude/hooks/auto-register.sh" }] },
       { "matcher": "*",    "hooks": [{ "type": "command", "command": "~/.claude/hooks/wire-inbox.sh" }] },
-      { "matcher": "Edit|Write|NotebookEdit", "hooks": [{ "type": "command", "command": "~/.claude/hooks/file-lock-check.sh" }] }
+      { "matcher": "Edit|Write|NotebookEdit", "hooks": [{ "type": "command", "command": "~/.claude/hooks/file-lock-check.sh" }] },
+      { "matcher": "*",    "hooks": [{ "type": "command", "command": "~/.claude/hooks/loop-guard.sh" }] }
     ],
     "PostToolUse": [
       { "matcher": "Bash", "hooks": [{ "type": "command", "command": "~/.claude/hooks/build-ledger.sh" }] },
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "~/.claude/hooks/engine-tracker.sh" }] }
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "~/.claude/hooks/engine-tracker.sh" }] },
+      { "matcher": "*",    "hooks": [{ "type": "command", "command": "~/.claude/hooks/loop-guard.sh" }] }
     ]
   }
 }
