@@ -1,4 +1,14 @@
-# Cron — Pillar 1 capacity write-path
+# Cron — battlestation maintenance jobs
+
+| Job | Schedule | What it does |
+|---|---|---|
+| `capacity-snapshot.sh` | every 5 min | snapshot account capacity to Supabase (Pillar 1 write-path) |
+| `expire-sessions.sh` | every 5 min | expire stale `session_locks` rows; promote parked prompts |
+| `cleanup-tmp.sh` | every 15 min | remove `/tmp` state for dead session PIDs |
+
+All read credentials from `.env` via `lib/config.sh` — no baked-in secrets.
+
+## capacity-snapshot.sh
 
 `token-watch` and `lib/session-guard.sh` **read** the `account_capacity` table,
 but nothing populated it. `capacity-snapshot.sh` is that missing writer.
@@ -25,18 +35,39 @@ Safety: if the statusline payload has no live rate-limit data, the active row is
 **not** overwritten with zeros — the last good snapshot is preserved.
 Credentials come from `.env` via `lib/config.sh`; no secrets are baked in.
 
-## Install (every 5 minutes)
+## expire-sessions.sh
+
+Garbage-collects the `session_locks` table:
+
+1. At >5 min stale heartbeat → clears `files_touched` so a dead session's file
+   locks don't block live peers.
+2. At >30 min stale → marks `status='done'` + `released_at`.
+
+Before full expiry, any session carrying a `next_session_prompt` has it promoted
+into `session_tasks` (`status='blocked'`) so a parked "resume" prompt isn't lost.
+
+## cleanup-tmp.sh
+
+Removes `/tmp/claude-*-$PID` files and `/tmp/battlestation/$PID/` directories for
+PIDs whose process is gone (`kill -0` check). Pure local; skips live sessions.
+
+## Install
 
 ```bash
-chmod +x cron/capacity-snapshot.sh cron/install-cron.sh
-./cron/install-cron.sh            # idempotent — re-running replaces, never duplicates
-./cron/install-cron.sh --uninstall
+./cron/install-cron.sh             # installs all three jobs, idempotent
+./cron/install-cron.sh --uninstall # removes them
 ```
+
+The installer is idempotent — re-running replaces the battlestation entries
+(matched by a `# battlestation: <name>` marker) and never duplicates them or
+touches unrelated crontab lines.
 
 Or add by hand with `crontab -e`:
 
 ```crontab
-*/5 * * * * /ABSOLUTE/PATH/sarah-build-pack/cron/capacity-snapshot.sh >> /tmp/battlestation/cron.log 2>&1
+*/5  * * * * /ABS/PATH/sarah-build-pack/cron/capacity-snapshot.sh >> /tmp/battlestation/cron.log 2>&1
+*/5  * * * * /ABS/PATH/sarah-build-pack/cron/expire-sessions.sh   >> /tmp/battlestation/cron.log 2>&1
+*/15 * * * * /ABS/PATH/sarah-build-pack/cron/cleanup-tmp.sh       >> /tmp/battlestation/cron.log 2>&1
 ```
 
 ## Test
