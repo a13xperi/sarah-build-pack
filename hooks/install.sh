@@ -19,6 +19,7 @@ HOOK_FILES=(
   token-tracker.sh
   engine-tracker.sh
   loop-guard.sh
+  spend-guard.sh
 )
 
 echo "Battlestation hook installer (isolated stack)"
