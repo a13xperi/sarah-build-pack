@@ -47,3 +47,26 @@ flowchart TD
 5. **Escalate freely.** Sonnet bumps to Opus whenever judgment demands — be cheap on typing, not on thinking.
 
 > Swap engine names for whatever you actually have API access to. The *shape* (Opus bread / Sonnet director / cheap meat) is the invariant, not the specific vendors.
+
+## Implementation
+
+The routing table above is encoded as a deterministic classifier:
+
+- **`lib/route.py`** — `classify_task(description, task_type=None, risk=None)` returns
+  `{engine, dispatch, in_session, confidence, reason}`. Stdlib only, no API calls.
+  `opus`/`sonnet` are `in_session` (handled by the main Claude session);
+  `codex`/`gemini`/`minimax`/`kimi` are external (the `dispatch` field is the
+  `bs-dispatch.sh --engine` value, e.g. `minimax → mm`). Audit/security always
+  overrides to Opus; explicit `risk=high` escalates cheap routes to Opus unless
+  the task is clearly tests/boilerplate.
+- **`bin/bs-route`** — CLI wrapper. Classify only, or `--dispatch --task <name>
+  --prompt-file <path>` to hand external engines to `bs-dispatch.sh` (found via
+  `$BS_DISPATCH`; it lives in the live battlestation, not this pack). In-session
+  engines are never dispatched.
+- **`tests/test_route.py`** — `python3 -m unittest tests.test_route`.
+
+```bash
+bs-route "add unit tests for the parser"          # → minimax (dispatch:mm)
+bs-route --type refactor "split the god object"   # → codex
+bs-route --risk high "tweak the billing webhook"  # → opus (in-session)
+```
