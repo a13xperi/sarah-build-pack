@@ -1,0 +1,68 @@
+#!/bin/bash
+# claude-switch — switch the active Claude account (A/B/C), capacity-gated.
+#
+#   claude-switch                 show active account + A/B/C capacity
+#   claude-switch A|B|C [--force] switch to that account (--force ignores gates)
+#   claude-switch --best [--force] switch to the lowest-usage alternate
+#   claude-switch restore A|B|C   re-write the keychain from a vault (no switch)
+#   claude-switch --dry-run A|B|C|--best
+#                                 show the resolved target + capacity, change nothing
+#
+# Thin wrapper over lanes/accounts.sh.
+
+set -uo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+source "$HERE/../lanes/accounts.sh"
+
+show_status() {
+  local active; active=$(bs_active_label)
+  echo "Active: $(bs_active_account) [$active]"
+  while IFS= read -r l; do
+    [ -z "$l" ] && continue
+    local cap; cap=$(bs_account_capacity "$l")
+    local mark=" "; [ "$l" = "$active" ] && mark="*"
+    echo "  ${mark} ${l}: 5h $(echo "$cap" | awk '{print $1}')% / 7d $(echo "$cap" | awk '{print $2}')%"
+  done < <(jq -r '.accounts[].label' "$ACCOUNTS_FILE" 2>/dev/null)
+}
+
+DRY=0; FORCE=false; ACTION=""; TARGET=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run) DRY=1; shift ;;
+    --force)   FORCE=true; shift ;;
+    --best)    TARGET="--best"; shift ;;
+    restore)   ACTION="restore"; TARGET="${2:-}"; shift 2 ;;
+    A|B|C)     TARGET="$1"; shift ;;
+    status|"") ACTION="status"; shift || true ;;
+    *) echo "unknown arg: $1" >&2; exit 2 ;;
+  esac
+done
+
+# Default action.
+[ -z "$ACTION" ] && [ -z "$TARGET" ] && ACTION="status"
+
+if [ "$ACTION" = "status" ]; then show_status; exit 0; fi
+
+# Resolve --best to a concrete label.
+if [ "$TARGET" = "--best" ]; then
+  TARGET=$(bs_best_alt_account)
+  [ -z "$TARGET" ] && { echo "No alternate account available." >&2; exit 1; }
+  echo "best alternate → $TARGET"
+fi
+
+if [ "$ACTION" = "restore" ]; then
+  [ -z "$TARGET" ] && { echo "restore needs a label (A|B|C)" >&2; exit 2; }
+  bs_restore_credentials "$TARGET"; exit $?
+fi
+
+[ -z "$TARGET" ] && { echo "nothing to do" >&2; exit 2; }
+
+if [ "$DRY" = "1" ]; then
+  local_cap=$(bs_account_capacity "$TARGET")
+  echo "[dry-run] would switch $(bs_active_label) → ${TARGET}"
+  echo "[dry-run] target ${TARGET} capacity: 5h $(echo "$local_cap" | awk '{print $1}')% / 7d $(echo "$local_cap" | awk '{print $2}')% (force=${FORCE})"
+  echo "[dry-run] no credentials or accounts.json changed."
+  exit 0
+fi
+
+bs_switch_account "$TARGET" "$FORCE"
