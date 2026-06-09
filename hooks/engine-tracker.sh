@@ -67,11 +67,11 @@ import json, sys
 obj = {
     'platform': sys.argv[1],
     'task_id': sys.argv[2],
-    'session_type': 'build',
+    'session_type': 'interactive',
     'started_at': sys.argv[3],
     'ended_at': sys.argv[3],
     'duration_seconds': 0,
-    'outcome': 'success',
+    'outcome': 'completed',
     'notes': 'session:' + sys.argv[4] + ' engine:' + sys.argv[5],
 }
 if sys.argv[6]:
