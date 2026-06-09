@@ -27,20 +27,20 @@ session_guard_check() {
   type supa_get >/dev/null 2>&1 || return 0
 
   local rows
-  rows=$(supa_get "account_capacity" "select=account,seven_pct,is_active" 2>/dev/null)
+  rows=$(supa_get "account_capacity" "select=account,seven_day_used_pct,is_active" 2>/dev/null)
   # Empty table / error / no rows → nothing to guard against.
   [ -z "$rows" ] && return 0
   [ "$rows" = "[]" ] && return 0
   echo "$rows" | grep -q '"error"' 2>/dev/null && return 0
 
   # Decide via jq: if the active account is over threshold, pick the
-  # alternate account with the lowest seven_pct and print its label.
+  # alternate account with the lowest seven_day_used_pct and print its label.
   local best
   best=$(echo "$rows" | jq -r --argjson thr "$SG_SWITCH_AT_PCT" '
-    (map(select(.is_active == true)) | .[0].seven_pct // 0) as $active_pct
+    (map(select(.is_active == true)) | .[0].seven_day_used_pct // 0) as $active_pct
     | if $active_pct >= $thr then
         ( map(select(.is_active != true))
-          | sort_by(.seven_pct // 100)
+          | sort_by(.seven_day_used_pct // 100)
           | .[0].account // empty )
       else empty end
   ' 2>/dev/null)
