@@ -38,8 +38,21 @@ flowchart TD
 | `account_capacity_history` | append-only time-series of snapshots (cron every 5 min + on switch) |
 | `ai_capacity_ledger` | every AI usage event across all engines — for cost + capacity planning |
 
-A capacity-snapshot cron writes `account_capacity` on a schedule. The token-watch TUI reads it; until you install that, query the table directly.
+A capacity-snapshot cron writes `account_capacity` on a schedule (`cron/capacity-snapshot.sh`, installed via `cron/install-cron.sh`). The token-watch TUI reads it.
 
 ## Capacity check (every session start)
 
 Before claiming work: glance at `account_capacity`. If active account 7d% > 70 → switch. If all three are thin → route to external engines (see Pillar 3).
+
+## Switching accounts
+
+`lanes/accounts.sh` implements resolution + capacity-gated switching, exposed via the `bin/claude-switch` CLI:
+
+```bash
+claude-switch              # show active account + A/B/C capacity
+claude-switch B            # switch to B (refused if 5h≥95% or 7d≥90%; --force overrides)
+claude-switch --best       # switch to the lowest-usage alternate
+claude-switch --dry-run B  # show the target + capacity, change nothing
+```
+
+A switch writes a departure snapshot to `account_capacity_history`, flips `is_active`, and restores the target's token from its vault into the macOS Keychain (vaults are bring-your-own; see README). macOS-only — elsewhere only `accounts.json` is updated.

@@ -7,6 +7,9 @@
 -- working_sessions
 -- Groups multiple 5-hour Claude Code sessions into a single logical "sitting".
 -- ID format: WS-YYMMDD-seq (e.g., WS-260407-1)
+-- RESERVED: no writer ships in this pack yet — session_locks/session_tasks
+-- reference it (parent "sitting"), but populating it is left to the operator
+-- (e.g. a /start-sitting flow). Kept so the FKs resolve.
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS working_sessions (
   id                text        PRIMARY KEY,             -- WS-YYMMDD-seq format

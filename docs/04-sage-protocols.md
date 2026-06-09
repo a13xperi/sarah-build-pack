@@ -39,12 +39,22 @@ Before any expensive batch (subagent fan-out, paid API runs):
 ## Loop prevention
 - Same tool call fails **3×** consecutively → STOP, report the exact error. Never loop silently.
 - Single-variable builds: build one integration, test, confirm, then the next.
+- **Enforced** by `hooks/loop-guard.sh` (PreToolUse + PostToolUse): tracks consecutive failures of an identical call and blocks the next repeat once it trips. Tune via `drain-prevention.json` → `loop_guard.{max_repeats, mode}`.
 
 ## Delegation discipline
 - Main thread = conversation with the human. Always responsive, never blocked.
 - Auto-delegate anything > a couple tool calls to a subagent; acknowledge immediately, report on completion.
 - Sub-agent tasks must be **self-contained** (they have no conversation context). Write outputs to files, not chat.
 - One agent per task. Kill before re-spawning. No recursive spawning.
+- Auto-delegation itself stays behavioral (Claude Code's own Agent tool); it isn't a hook in this pack.
+
+## What's enforced in code (vs. behavioral)
+| Protocol | Backing |
+|---|---|
+| Spending guard | `hooks/spend-guard.sh` (warn/block on subagent + paid-engine fan-out) + `hooks/token-tracker.sh` (session budget) |
+| Loop prevention | `hooks/loop-guard.sh` |
+| Decision logging | `hooks/build-ledger.sh` (`[DECISION]` commits) |
+| Source-of-truth · PRD-as-rails · ask-vs-execute · delegation | behavioral (operator discipline) |
 
 ---
 
