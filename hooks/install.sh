@@ -17,6 +17,7 @@ HOOK_FILES=(
   file-lock-check.sh
   build-ledger.sh
   token-tracker.sh
+  engine-tracker.sh
 )
 
 echo "Battlestation hook installer (isolated stack)"

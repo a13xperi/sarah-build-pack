@@ -57,7 +57,8 @@ source ~/sarah-build-pack/lib/session.sh
       { "matcher": "Edit|Write|NotebookEdit", "hooks": [{ "type": "command", "command": "~/.claude/hooks/file-lock-check.sh" }] }
     ],
     "PostToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "~/.claude/hooks/build-ledger.sh" }] }
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "~/.claude/hooks/build-ledger.sh" }] },
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "~/.claude/hooks/engine-tracker.sh" }] }
     ]
   }
 }
