@@ -99,9 +99,9 @@ def _render(sessions, ledger, capacity):
     if capacity:
         lines.append("## Account capacity")
         for c in capacity:
-            label = c.get("account", c.get("label", "?"))
-            five = c.get("five_pct", "?")
-            seven = c.get("seven_pct", "?")
+            label = c.get("account") or c.get("account_name", "?")
+            five = c.get("five_hour_used_pct", "?")
+            seven = c.get("seven_day_used_pct", "?")
             active = " (active)" if c.get("is_active") else ""
             lines.append(f"- {label}{active}: 5h {five}% / 7d {seven}%")
         lines.append("")
