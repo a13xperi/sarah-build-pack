@@ -1,39 +1,70 @@
 #!/bin/bash
-# Install the capacity-snapshot cron job (idempotent).
+# Install the battlestation maintenance cron jobs (idempotent).
 #
-# Adds a */5 crontab entry that snapshots account capacity to Supabase.
-# Safe to re-run: if a capacity-snapshot line already exists, it is replaced
-# rather than duplicated. Use --uninstall to remove it.
+# Jobs:
+#   capacity-snapshot  every 5 min   — snapshot account capacity to Supabase
+#   expire-sessions    every 5 min   — expire stale session_locks rows
+#   cleanup-tmp        every 15 min  — remove /tmp state for dead session PIDs
+#
+# Safe to re-run: existing battlestation entries are replaced, never duplicated
+# (matched by per-job marker `# battlestation: <name>` or the script path).
+# Use --uninstall to remove all of them.
 
 set -euo pipefail
 
 CRON_DIR="$(cd "$(dirname "$0")" && pwd)"
-SCRIPT="$CRON_DIR/capacity-snapshot.sh"
 LOG="/tmp/battlestation/cron.log"
-MARKER="# battlestation: capacity-snapshot"
-ENTRY="*/5 * * * * ${SCRIPT} >> ${LOG} 2>&1  ${MARKER}"
 
-chmod +x "$SCRIPT" 2>/dev/null || true
+# job-name | schedule | script
+JOBS=(
+  "capacity-snapshot|*/5 * * * *|${CRON_DIR}/capacity-snapshot.sh"
+  "expire-sessions|*/5 * * * *|${CRON_DIR}/expire-sessions.sh"
+  "cleanup-tmp|*/15 * * * *|${CRON_DIR}/cleanup-tmp.sh"
+)
+
 mkdir -p /tmp/battlestation 2>/dev/null || true
 
-# Current crontab (empty string if none).
+# Make scripts executable.
+for spec in "${JOBS[@]}"; do
+  IFS='|' read -r _name _sched script <<<"$spec"
+  chmod +x "$script" 2>/dev/null || true
+done
+
+# Current crontab (empty if none).
 CURRENT="$(crontab -l 2>/dev/null || true)"
 
-# Drop any existing capacity-snapshot lines (match our marker or the script path).
-FILTERED="$(printf '%s\n' "$CURRENT" | grep -v -F "$MARKER" | grep -v -F "capacity-snapshot.sh" || true)"
+# Strip any prior battlestation lines (by marker or by any of our script paths).
+FILTERED="$CURRENT"
+strip_line() { FILTERED="$(printf '%s\n' "$FILTERED" | grep -v -F "$1" || true)"; }
+strip_line "# battlestation:"
+for spec in "${JOBS[@]}"; do
+  IFS='|' read -r _name _sched script <<<"$spec"
+  strip_line "$script"
+done
 
 if [ "${1:-}" = "--uninstall" ]; then
-  printf '%s\n' "$FILTERED" | grep -v '^$' | crontab - 2>/dev/null || crontab -r 2>/dev/null || true
-  echo "Removed capacity-snapshot cron entry."
+  CLEAN="$(printf '%s\n' "$FILTERED" | grep -v '^$' || true)"
+  if [ -z "$CLEAN" ]; then
+    crontab -r 2>/dev/null || true
+  else
+    printf '%s\n' "$CLEAN" | crontab -
+  fi
+  echo "Removed battlestation cron entries."
   exit 0
 fi
 
-# Append the fresh entry and install.
+# Rebuild crontab: surviving user lines + a fresh entry per job.
 {
   printf '%s\n' "$FILTERED" | grep -v '^$' || true
-  printf '%s\n' "$ENTRY"
+  for spec in "${JOBS[@]}"; do
+    IFS='|' read -r name sched script <<<"$spec"
+    printf '%s %s >> %s 2>&1  # battlestation: %s\n' "$sched" "$script" "$LOG" "$name"
+  done
 } | crontab -
 
-echo "Installed capacity-snapshot cron (every 5 min):"
-echo "  $ENTRY"
+echo "Installed battlestation maintenance cron jobs:"
+for spec in "${JOBS[@]}"; do
+  IFS='|' read -r name sched script <<<"$spec"
+  echo "  [$name] $sched -> $script"
+done
 echo "Logs: $LOG  and  /tmp/battlestation/battlestation.log"
