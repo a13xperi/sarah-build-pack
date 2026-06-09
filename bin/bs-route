@@ -1,0 +1,84 @@
+#!/bin/bash
+# bs-route — classify a task to an engine (Pillar 3), optionally dispatch it.
+#
+# Classify only:
+#   bs-route "add unit tests for the parser"
+#   bs-route --type refactor "split the god object"
+#   bs-route --json --risk high "tweak the billing webhook"
+#
+# Classify + dispatch (external engines only):
+#   bs-route --dispatch --task fix-parser --prompt-file ./prompt.md "fix the parser bug"
+#
+# Dispatch handoff is best-effort: opus/sonnet are kept in the main session
+# (nothing is dispatched). External engines (codex/gemini/minimax/kimi) are
+# handed to bs-dispatch.sh if it can be found. bs-dispatch.sh lives in the live
+# battlestation, not this repo, so set BS_DISPATCH to its path if needed:
+#   export BS_DISPATCH="$HOME/code/battlestation/scripts/bs-dispatch.sh"
+
+set -euo pipefail
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+ROUTE_PY="$HERE/../lib/route.py"
+
+DISPATCH=0
+TASK=""
+PROMPT_FILE=""
+WORKTREE_REPO=""
+DRY_RUN=0
+PASS=()        # args forwarded to route.py (description + --type/--risk)
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dispatch)      DISPATCH=1; shift ;;
+    --task)          TASK="$2"; shift 2 ;;
+    --prompt-file)   PROMPT_FILE="$2"; shift 2 ;;
+    --worktree-repo) WORKTREE_REPO="$2"; shift 2 ;;
+    --dry-run)       DRY_RUN=1; shift ;;
+    --type|--risk)   PASS+=("$1" "$2"); shift 2 ;;
+    *)               PASS+=("$1"); shift ;;
+  esac
+done
+
+# Classify (always). Emit JSON so we can read the chosen engine reliably.
+RESULT=$(python3 "$ROUTE_PY" --json "${PASS[@]}")
+ENGINE=$(printf '%s' "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['engine'])")
+DISPATCH_ENGINE=$(printf '%s' "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('dispatch') or '')")
+IN_SESSION=$(printf '%s' "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['in_session'])")
+CONF=$(printf '%s' "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['confidence'])")
+REASON=$(printf '%s' "$RESULT" | python3 -c "import json,sys; print(json.load(sys.stdin)['reason'])")
+
+# Human-readable recommendation.
+if [ "$IN_SESSION" = "True" ]; then
+  echo "→ ${ENGINE}  (${CONF}, in-session) — ${REASON}"
+else
+  echo "→ ${ENGINE}  (${CONF}, dispatch:${DISPATCH_ENGINE}) — ${REASON}"
+fi
+
+[ "$DISPATCH" = "0" ] && exit 0
+
+# ── Dispatch handoff ─────────────────────────────────────────────
+if [ "$IN_SESSION" = "True" ]; then
+  echo "ℹ ${ENGINE} runs in the main Claude session — nothing to dispatch."
+  echo "  (Opus = design/validate, Sonnet = direct/integrate.)"
+  exit 0
+fi
+
+if [ -z "$TASK" ] || [ -z "$PROMPT_FILE" ]; then
+  echo "✗ --dispatch needs --task <name> and --prompt-file <path>." >&2
+  exit 1
+fi
+
+# Locate bs-dispatch.sh (not shipped in this repo).
+BS_DISPATCH="${BS_DISPATCH:-$HOME/code/battlestation/scripts/bs-dispatch.sh}"
+if [ ! -x "$BS_DISPATCH" ]; then
+  echo "✗ bs-dispatch.sh not found/executable at: $BS_DISPATCH" >&2
+  echo "  Set BS_DISPATCH to its location to enable dispatch." >&2
+  exit 1
+fi
+
+CMD=("$BS_DISPATCH" --engine "$DISPATCH_ENGINE" --task "$TASK" --prompt-file "$PROMPT_FILE")
+[ -n "$WORKTREE_REPO" ] && CMD+=(--worktree-repo "$WORKTREE_REPO")
+[ "$DRY_RUN" = "1" ] && CMD+=(--dry-run)
+
+echo "→ dispatching to ${DISPATCH_ENGINE}: ${CMD[*]}"
+exec "${CMD[@]}"
